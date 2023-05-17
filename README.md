@@ -3,4 +3,5 @@
 
 运行方法
 ```
-bash <(curl -ls )
+bash <(curl -ls https://raw.githubusercontent.com/SevenSevenE/Lxc_nat/main/nat.sh)
+```
