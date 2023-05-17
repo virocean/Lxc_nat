@@ -1,5 +1,6 @@
 #!/bin/bash
-
+sudo apt-get update
+sudo apt-get install iptables-persistent
 # 函数：添加端口转发规则
 add_forwarding_rule() {
     echo "请输入宿主机的IP地址:"
@@ -16,6 +17,10 @@ add_forwarding_rule() {
     
     sudo iptables -t nat -A PREROUTING -p tcp --dport "$host_port" -j DNAT --to-destination "$internal_ip":"$internal_port"
     sudo iptables -t nat -A POSTROUTING -p tcp -d "$internal_ip" --dport "$internal_port" -j SNAT --to-source "$host_ip"
+    
+    # 保存规则到持久规则文件
+    sudo iptables-save | sudo tee /etc/iptables/rules.v4 >/dev/null
+    
     echo "已成功添加端口转发规则：$host_port -> $internal_ip:$internal_port"
 }
 
@@ -35,6 +40,7 @@ delete_forwarding_rule() {
     
     sudo iptables -t nat -D PREROUTING -p tcp --dport "$host_port" -j DNAT --to-destination "$internal_ip":"$internal_port"
     sudo iptables -t nat -D POSTROUTING -p tcp -d "$internal_ip" --dport "$internal_port" -j SNAT --to-source "$host_ip"
+    
     echo "已成功删除端口转发规则：$host_port -> $internal_ip:$internal_port"
 }
 
@@ -44,6 +50,9 @@ list_forwarding_rules() {
 }
 
 # 主程序
+# 加载持久规则文件
+sudo iptables-restore < /etc/iptables/rules.v4
+
 while true; do
     echo "请选择要执行的操作:"
     echo "1. 添加端口转发规则"
